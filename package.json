@@ -14,6 +14,7 @@
     "@tanstack/react-query": "^5.66.8",
     "@types/axios": "^0.14.0",
     "axios": "^1.6.7",
+    "file-saver": "^2.0.5",
     "flowbite": "^2.2.1",
     "flowbite-react": "^0.7.2",
     "jotai": "^2.6.1",
@@ -22,11 +23,13 @@
     "react-query": "^3.39.3",
     "serve": "^14.2.1",
     "swr": "^2.2.4",
+    "xlsx": "^0.18.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@swc-jotai/debug-label": "^0.1.0",
     "@swc-jotai/react-refresh": "^0.1.0",
+    "@types/file-saver": "^2.0.7",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.18.1",

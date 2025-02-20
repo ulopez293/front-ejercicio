@@ -2,32 +2,43 @@ import { useState } from "react"
 import { fetchTraslados, Traslado } from "../fetch/fetchTraslados"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { emissionFactors } from "../data/emisionData"
+import { exportToExcel } from "./DownloadExcel"
+
+const initialForm = {
+    partida: "",
+    destino: "",
+    transporte: "",
+    fecha: "",
+    kilometros: "",
+    trabajador: "",
+    idaVuelta: false,
+}
 
 export const Home = () => {
     const [isEditMode, setIsEditMode] = useState(false)
     const [actualID, setActualID] = useState("")
     const queryClient = useQueryClient()
-    const [formData, setFormData] = useState({
-        partida: "",
-        destino: "",
-        transporte: "",
-        fecha: "",
-        kilometros: "",
-        trabajador: "",
-        idaVuelta: false,
-    })
+    const [formData, setFormData] = useState(initialForm)
+    const [filtro, setFiltro] = useState("");
 
     const { data: traslados = [], isLoading, isError, error } = useQuery({
         queryKey: ["traslados"],
         queryFn: fetchTraslados,
     })
 
+    const trasladosFiltrados = traslados.filter((traslado) =>
+        traslado.trabajador.toLowerCase().includes(filtro.toLowerCase()) ||
+        traslado.partida.toLowerCase().includes(filtro.toLowerCase()) ||
+        traslado.destino.toLowerCase().includes(filtro.toLowerCase())
+    );
+
+
     const saveTraslado = async (data: typeof formData) => {
         const response = await fetch(`${import.meta.env.VITE_URL_API}/traslados/save`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
-        });
+        })
         if (!response.ok) throw new Error("Error al guardar el traslado");
         return response.json();
     }
@@ -36,15 +47,7 @@ export const Home = () => {
         mutationFn: saveTraslado,
         onSuccess: () => {
             alert("Traslado guardado con éxito")
-            setFormData({
-                partida: "",
-                destino: "",
-                transporte: "",
-                fecha: "",
-                kilometros: "",
-                trabajador: "",
-                idaVuelta: false,
-            });
+            setFormData(initialForm)
             void queryClient.invalidateQueries({ queryKey: ["traslados"] })
         },
         onError: (error) => {
@@ -91,26 +94,16 @@ export const Home = () => {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(trasladoEditado),
-            });
-    
-            if (!response.ok) {
-                throw new Error("Error al actualizar el traslado");
-            }
-    
-            return response.json();
+            })
+
+            if (!response.ok) throw new Error("Error al actualizar el traslado")
+
+            return response.json()
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ["traslados"] })
             setIsEditMode(false)
-            setFormData({
-                partida: "",
-                destino: "",
-                transporte: "",
-                fecha: "",
-                kilometros: "",
-                trabajador: "",
-                idaVuelta: false,
-            })
+            setFormData(initialForm)
             setActualID("")
             alert("Traslado actualizado con éxito")
         },
@@ -130,7 +123,7 @@ export const Home = () => {
                 idaVuelta: formData.idaVuelta,
             })
             return
-        } 
+        }
         mutation.mutate(formData)
     }
 
@@ -140,7 +133,7 @@ export const Home = () => {
         setActualID(_id)
         const trasladoSeleccionado = traslados.find((t) => t._id === _id)
 
-        
+
         if (trasladoSeleccionado) {
             console.log(trasladoSeleccionado.fecha)
             setFormData({
@@ -227,75 +220,92 @@ export const Home = () => {
             </form>
 
             {/* Listado de Traslados */}
-            <div className="overflow-x-auto">
-                <h2 className="text-xl font-semibold mb-4">Lista de Traslados</h2>
-
-                {isLoading && <p>Cargando traslados...</p>}
-                {isError && <p>Error al cargar traslados</p>}
-                {!isLoading && !isError && (
-                    <table className="min-w-full border-collapse border border-gray-300">
-                        <thead>
-                            <tr className="bg-gray-200">
-                                <th className="border p-2">Partida</th>
-                                <th className="border p-2">Destino</th>
-                                <th className="border p-2">Transporte</th>
-                                <th className="border p-2">Kilómetros</th>
-                                <th className="border p-2">Fecha</th>
-                                <th className="border p-2">Trabajador</th>
-                                <th className="border p-2">Ida y Vuelta</th>
-                                <th className="border p-2">Factor de Emisión</th>
-                                <th className="border p-2">Huella de Carbono</th>
-                                <th className="border p-2">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {traslados.map((traslado, index) => {
-                                const factorEmision = emissionFactors[traslado.transporte] ?? 0;
-                                const huellaCarbono = traslado.kilometros * factorEmision;
-                                return (
-                                    <tr key={traslado._id ?? index} className="text-center">
-                                        <td className="border p-2">{traslado.partida}</td>
-                                        <td className="border p-2">{traslado.destino}</td>
-                                        <td className="border p-2">{traslado.transporte}</td>
-                                        <td className="border p-2">{traslado.kilometros} km</td>
-                                        <td className="border p-2">{traslado.fecha}</td>
-                                        <td className="border p-2">{traslado.trabajador}</td>
-                                        <td className="border p-2">{traslado.idaVuelta ? "Sí" : "No"}</td>
-                                        <td className="border p-2">{factorEmision.toFixed(3)} kg CO₂/km</td>
-                                        <td className="border p-2">{huellaCarbono.toFixed(2)} kg CO₂</td>
-                                        <td className="border p-2">
-                                            <button
-                                                onClick={() => handleDelete(traslado._id)}
-                                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700 mr-5"
-                                            >
-                                                Eliminar
-                                            </button>
-
-                                            <button
-                                                onClick={() => handleEdit(traslado._id)}
-                                                className="bg-green-500  text-white px-2 py-1 rounded hover:bg-green-700"
-                                            >
-                                                Editar
-                                            </button>
-                                        </td>
+            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-screen-2xl mx-auto mb-6">
+                <div className="overflow-x-auto">
+                    <h2 className="text-xl font-semibold mb-4 text-center">Lista de Traslados</h2>
+                    {/* Input de Filtrado */}
+                    <input
+                        type="text"
+                        placeholder="Filtrar por trabajador, partida o destino..."
+                        value={filtro}
+                        onChange={(e) => setFiltro(e.target.value)}
+                        className="mb-4 p-2 border rounded w-full"
+                    />
+                    {isLoading && <p className="text-center">Cargando traslados...</p>}
+                    {isError && <p className="text-center text-red-500">Error al cargar traslados</p>}
+                    <button
+                        onClick={() => exportToExcel(traslados)}
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 hover:bg-green-700"
+                    >
+                        Descargar Excel
+                    </button>
+                    {!isLoading && !isError && (
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse border border-gray-300 text-sm sm:text-base">
+                                <thead>
+                                    <tr className="bg-gray-200 text-xs sm:text-sm">
+                                        <th className="border p-2">Partida</th>
+                                        <th className="border p-2">Destino</th>
+                                        <th className="border p-2">Transporte</th>
+                                        <th className="border p-2 hidden sm:table-cell">Kilómetros</th>
+                                        <th className="border p-2 hidden sm:table-cell">Fecha</th>
+                                        <th className="border p-2">Trabajador</th>
+                                        <th className="border p-2 hidden sm:table-cell">Ida y Vuelta</th>
+                                        <th className="border p-2 hidden sm:table-cell">Factor de Emisión</th>
+                                        <th className="border p-2 hidden sm:table-cell">Huella de Carbono</th>
+                                        <th className="border p-2">Acciones</th>
                                     </tr>
-                                );
-                            })}
-                            {traslados.length > 0 && (
-                                <tr className="text-center font-bold bg-gray-200">
-                                    <td className="border p-2" colSpan={8}>Total</td>
-                                    <td className="border p-2">
-                                        {traslados.reduce((total, traslado) => {
-                                            const factor = emissionFactors[traslado.transporte] ?? 0;
-                                            return total + traslado.kilometros * factor;
-                                        }, 0).toFixed(2)} kg CO₂
-                                    </td>
-                                    <td className="border p-2"></td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                )}
+                                </thead>
+                                <tbody>
+                                    {trasladosFiltrados.map((traslado, index) => {
+                                        const factorEmision = emissionFactors[traslado.transporte] ?? 0;
+                                        const huellaCarbono = traslado.kilometros * factorEmision;
+                                        return (
+                                            <tr key={traslado._id ?? index} className="text-center">
+                                                <td className="border p-2">{traslado.partida}</td>
+                                                <td className="border p-2">{traslado.destino}</td>
+                                                <td className="border p-2">{traslado.transporte}</td>
+                                                <td className="border p-2 hidden sm:table-cell">{traslado.kilometros} km</td>
+                                                <td className="border p-2 hidden sm:table-cell">{traslado.fecha}</td>
+                                                <td className="border p-2">{traslado.trabajador}</td>
+                                                <td className="border p-2 hidden sm:table-cell">{traslado.idaVuelta ? "Sí" : "No"}</td>
+                                                <td className="border p-2 hidden sm:table-cell">{factorEmision.toFixed(3)} kg CO₂/km</td>
+                                                <td className="border p-2 hidden sm:table-cell">{huellaCarbono.toFixed(3)} kg CO₂</td>
+                                                <td className="border p-2 flex flex-col sm:flex-row gap-2">
+                                                    <button
+                                                        onClick={() => handleDelete(traslado._id)}
+                                                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700 w-full sm:w-auto"
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEdit(traslado._id)}
+                                                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-700 w-full sm:w-auto"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {trasladosFiltrados.length > 0 && (
+                                        <tr className="text-center font-bold bg-gray-200">
+                                            <td className="border p-2" colSpan={8}>Total</td>
+                                            <td className="border p-2 hidden sm:table-cell">
+                                                {trasladosFiltrados.reduce((total, traslado) => {
+                                                    const factor = emissionFactors[traslado.transporte] ?? 0;
+                                                    return total + traslado.kilometros * factor;
+                                                }, 0).toFixed(3)} kg CO₂
+                                            </td>
+                                            <td className="border p-2"></td>
+                                        </tr>
+                                    )}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
