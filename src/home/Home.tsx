@@ -32,7 +32,7 @@ export const Home = () => {
     })
     const { data: trabajadores = [] } = useQuery({
         queryKey: ["trabajadores"],
-        queryFn: fetchUsers, // Aquí usamos la función fetchUsers
+        queryFn: fetchUsers,
     })
 
     const trabajadoresFiltrados = trabajadores.filter((t: User) =>
@@ -114,6 +114,7 @@ export const Home = () => {
 
 
     const handleEdit = (_id: string) => {
+        setTimeout(() => { window.scrollTo({ top: 0, behavior: "smooth" }) }, 10)
         setIsEditMode(true)
         setActualID(_id)
         const trasladoSeleccionado = traslados.find((t) => t._id === _id)
