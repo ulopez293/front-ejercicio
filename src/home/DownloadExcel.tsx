@@ -21,13 +21,11 @@ export const exportToExcel = (traslados: Traslado[]) => {
         "Huella de Carbono": `${(traslado.kilometros * (emissionFactors[traslado.transporte] ?? 0)).toFixed(3)} kg CO₂`
     }))
 
-    // Calcular el total de huella de carbono
     const totalHuellaCarbono = traslados.reduce((total, traslado) => {
         const factor = emissionFactors[traslado.transporte] ?? 0
         return total + traslado.kilometros * factor
     }, 0).toFixed(3)
 
-    // Agregar fila de total
     data.push({
         Partida: "TOTAL",
         Destino: "",

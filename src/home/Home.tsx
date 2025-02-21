@@ -1,8 +1,11 @@
 import { useState } from "react"
-import { fetchTraslados, Traslado } from "../fetch/fetchTraslados"
+import { fetchTraslados } from "../fetch/fetchTraslados"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { emissionFactors } from "../data/emisionData"
 import { exportToExcel } from "./DownloadExcel"
+import { saveTraslado } from "../mutations/saveTraslado"
+import { deleteTraslado } from "../mutations/deleteTraslado"
+import { updateTraslado } from "../mutations/updateTraslado"
 
 const initialForm = {
     partida: "",
@@ -13,13 +16,14 @@ const initialForm = {
     trabajador: "",
     idaVuelta: false,
 }
+export type InitialFormType = typeof initialForm
 
 export const Home = () => {
     const [isEditMode, setIsEditMode] = useState(false)
     const [actualID, setActualID] = useState("")
     const queryClient = useQueryClient()
     const [formData, setFormData] = useState(initialForm)
-    const [filtro, setFiltro] = useState("");
+    const [filtro, setFiltro] = useState("")
 
     const { data: traslados = [], isLoading, isError, error } = useQuery({
         queryKey: ["traslados"],
@@ -30,18 +34,7 @@ export const Home = () => {
         traslado.trabajador.toLowerCase().includes(filtro.toLowerCase()) ||
         traslado.partida.toLowerCase().includes(filtro.toLowerCase()) ||
         traslado.destino.toLowerCase().includes(filtro.toLowerCase())
-    );
-
-
-    const saveTraslado = async (data: typeof formData) => {
-        const response = await fetch(`${import.meta.env.VITE_URL_API}/traslados/save`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-        })
-        if (!response.ok) throw new Error("Error al guardar el traslado");
-        return response.json();
-    }
+    )
 
     const mutation = useMutation({
         mutationFn: saveTraslado,
@@ -56,22 +49,6 @@ export const Home = () => {
         },
     })
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const target = e.target as HTMLInputElement;
-        setFormData(prev => ({
-            ...prev,
-            [target.name]: target.type === "checkbox" ? target.checked : target.value,
-        }));
-    };
-
-    const deleteTraslado = async (id: string) => {
-        const response = await fetch(`${import.meta.env.VITE_URL_API}/traslados/${id}`, {
-            method: "DELETE",
-        })
-        if (!response.ok) throw new Error("Error al eliminar el traslado");
-        return response.json()
-    }
-
     const deleteMutation = useMutation({
         mutationFn: deleteTraslado,
         onSuccess: () => {
@@ -84,22 +61,8 @@ export const Home = () => {
         },
     })
 
-    const handleDelete = (id: string) => {
-        deleteMutation.mutate(id)
-    }
-
     const mutationUpdate = useMutation({
-        mutationFn: async (trasladoEditado: Traslado) => {
-            const response = await fetch(`${import.meta.env.VITE_URL_API}/traslados/${trasladoEditado._id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(trasladoEditado),
-            })
-
-            if (!response.ok) throw new Error("Error al actualizar el traslado")
-
-            return response.json()
-        },
+        mutationFn: updateTraslado,
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ["traslados"] })
             setIsEditMode(false)
@@ -108,6 +71,18 @@ export const Home = () => {
             alert("Traslado actualizado con éxito")
         },
     })
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const target = e.target as HTMLInputElement;
+        setFormData(prev => ({
+            ...prev,
+            [target.name]: target.type === "checkbox" ? target.checked : target.value,
+        }))
+    }
+    
+    const handleDelete = (id: string) => {
+        deleteMutation.mutate(id)
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
