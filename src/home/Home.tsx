@@ -6,6 +6,7 @@ import { exportToExcel } from "./DownloadExcel"
 import { saveTraslado } from "../mutations/saveTraslado"
 import { deleteTraslado } from "../mutations/deleteTraslado"
 import { updateTraslado } from "../mutations/updateTraslado"
+import { fetchUsers, User } from "../fetch/fetchUsers"
 
 const initialForm = {
     partida: "",
@@ -29,6 +30,15 @@ export const Home = () => {
         queryKey: ["traslados"],
         queryFn: fetchTraslados,
     })
+    const { data: trabajadores = [] } = useQuery({
+        queryKey: ["trabajadores"],
+        queryFn: fetchUsers, // Aquí usamos la función fetchUsers
+    })
+    
+    const trabajadoresFiltrados = trabajadores.filter((t: User) =>
+        t.name.toLowerCase().includes(formData.trabajador.toLowerCase())
+    )
+    
 
     const trasladosFiltrados = traslados.filter((traslado) =>
         traslado.trabajador.toLowerCase().includes(filtro.toLowerCase()) ||
@@ -133,11 +143,11 @@ export const Home = () => {
                 <h2 className="text-xl font-semibold mb-4">Registrar Traslado</h2>
 
                 <label className="block mb-2">Dirección de Partida</label>
-                <input type="text" name="partida" value={formData.partida} onChange={handleChange}
+                <input type="text" minLength={4} name="partida" value={formData.partida} onChange={handleChange}
                     className="w-full p-2 border rounded mb-3" required />
 
                 <label className="block mb-2">Dirección de Destino</label>
-                <input type="text" name="destino" value={formData.destino} onChange={handleChange}
+                <input type="text" minLength={4} name="destino" value={formData.destino} onChange={handleChange}
                     className="w-full p-2 border rounded mb-3" required />
 
                 <label className="block mb-2">Medio de Transporte</label>
@@ -170,8 +180,26 @@ export const Home = () => {
                     className="w-full p-2 border rounded mb-3" required />
 
                 <label className="block mb-2">Nombre del Trabajador</label>
-                <input type="text" name="trabajador" value={formData.trabajador} onChange={handleChange}
-                    className="w-full p-2 border rounded mb-3" required />
+                <div className="relative">
+                    <input
+                        type="text"
+                        name="trabajador"
+                        minLength={4}
+                        value={formData.trabajador}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded mb-3"
+                        required
+                    />
+                    {trabajadoresFiltrados.map((trabajador: User) => (
+                        <li
+                            key={trabajador._id}
+                            className="p-2 cursor-pointer hover:bg-gray-200"
+                            onClick={() => setFormData({ ...formData, trabajador: trabajador.name })}
+                        >
+                            {trabajador.name}
+                        </li>
+                    ))}
+                </div>
 
                 <div className="flex items-center mb-4">
                     <input type="checkbox" name="idaVuelta" checked={formData.idaVuelta} onChange={handleChange}

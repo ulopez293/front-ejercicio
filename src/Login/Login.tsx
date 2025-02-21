@@ -4,10 +4,15 @@ import IMG from '../assets/img/icon.png'
 import backgroundIMG from '../assets/img/background.jpeg'
 import { useAtom } from 'jotai'
 import { userDataAtom } from '../atoms/userDataAtom'
+import { Link } from 'react-router-dom'
 
 const credentials = {
   email: 'admin@foreach.com',
   password: 'Ll1820M8ZfjGHYj',
+}
+interface AuthResponse {
+  message: string
+  token: string
 }
 
 export const Login = () => {
@@ -24,14 +29,35 @@ export const Login = () => {
     setPassword(e.target.value)
   }
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+
+  const handleSubmitLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (email === credentials.email && password === credentials.password) {
-      setUserData({ login: true, email })
-    } else {
-      alert('Credenciales inválidas')
-      console.error('Credenciales inválidas')
+    try {
+      const response = await fetch(`${import.meta.env.VITE_URL_API}/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      })
+
+      if (!response.ok) throw new Error("Error en la autenticación")
+
+      const data = (await response.json()) as AuthResponse
+
+      setUserData({ login: true, email, token: data.token })
+      alert("Login exitoso")
+      console.log("Token recibido:", data.token)
+      localStorage.setItem("authToken", data.token)
+    } catch (error) {
+      alert("Credenciales inválidas")
+      console.error("Error en login:", error)
     }
+  }
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    void handleSubmitLogin(e)
   }
 
   return (
@@ -56,6 +82,11 @@ export const Login = () => {
             </div>
             <Button type="submit">Enviar</Button>
           </form>
+          <div className='text-center initial w-full'>
+            <Link to="/register">
+              <Button>Crear Usuario</Button>
+            </Link>
+          </div>
         </Card>
       </div>
     </div>

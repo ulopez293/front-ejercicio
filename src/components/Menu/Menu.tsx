@@ -22,7 +22,10 @@ export const Menu = () => {
               <Avatar alt="User settings" className='me-3' img={profileIMG} rounded />
             }
           >
-            <Dropdown.Item onClick={() => { setUserData({ login: false, email: `` }) }}>Cerrar Sesión</Dropdown.Item>
+            <Dropdown.Item onClick={() => { 
+              setUserData({ login: false, email: `` }) 
+              localStorage.removeItem("authToken")
+            }}>Cerrar Sesión</Dropdown.Item>
           </Dropdown>
           <Navbar.Toggle />
         </div>
