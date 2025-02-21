@@ -9,22 +9,29 @@ export const exportToExcel = (traslados: Traslado[]) => {
         return
     }
 
-    const data = traslados.map(traslado => ({
-        Partida: traslado.partida,
-        Destino: traslado.destino,
-        Transporte: traslado.transporte,
-        Kilómetros: `${traslado.kilometros} km`,
-        Fecha: traslado.fecha,
-        Trabajador: traslado.trabajador,
-        "Ida y Vuelta": traslado.idaVuelta ? "Sí" : "No",
-        "Factor de Emisión": `${(emissionFactors[traslado.transporte] ?? 0).toFixed(3)} kg CO₂/km`,
-        "Huella de Carbono": `${(traslado.kilometros * (emissionFactors[traslado.transporte] ?? 0)).toFixed(3)} kg CO₂`
-    }))
+    const data = traslados.map(traslado => {
+        const factor = emissionFactors[traslado.transporte] ?? 0
+        const kmTotales = traslado.kilometros * (traslado.idaVuelta ? 2 : 1)
+        const huellaCarbono = kmTotales * factor
+
+        return {
+            Partida: traslado.partida,
+            Destino: traslado.destino,
+            Transporte: traslado.transporte,
+            Kilómetros: `${traslado.kilometros} km`,
+            "Ida y Vuelta": traslado.idaVuelta ? "Sí" : "No",
+            Fecha: traslado.fecha,
+            Trabajador: traslado.trabajador,
+            "Factor de Emisión": `${factor.toFixed(6)} kg CO₂/km`,
+            "Huella de Carbono": `${huellaCarbono.toFixed(6)} kg CO₂`
+        }
+    })
 
     const totalHuellaCarbono = traslados.reduce((total, traslado) => {
         const factor = emissionFactors[traslado.transporte] ?? 0
-        return total + traslado.kilometros * factor
-    }, 0).toFixed(3)
+        const kmTotales = traslado.kilometros * (traslado.idaVuelta ? 2 : 1)
+        return total + kmTotales * factor
+    }, 0).toFixed(6)
 
     data.push({
         Partida: "TOTAL",

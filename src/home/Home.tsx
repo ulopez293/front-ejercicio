@@ -34,11 +34,11 @@ export const Home = () => {
         queryKey: ["trabajadores"],
         queryFn: fetchUsers, // Aquí usamos la función fetchUsers
     })
-    
+
     const trabajadoresFiltrados = trabajadores.filter((t: User) =>
         t.name.toLowerCase().includes(formData.trabajador.toLowerCase())
     )
-    
+
 
     const trasladosFiltrados = traslados.filter((traslado) =>
         traslado.trabajador.toLowerCase().includes(filtro.toLowerCase()) ||
@@ -89,7 +89,7 @@ export const Home = () => {
             [target.name]: target.type === "checkbox" ? target.checked : target.value,
         }))
     }
-    
+
     const handleDelete = (id: string) => {
         deleteMutation.mutate(id)
     }
@@ -98,7 +98,7 @@ export const Home = () => {
         e.preventDefault()
         if (isEditMode) {
             mutationUpdate.mutate({
-                _id: actualID, 
+                _id: actualID,
                 partida: formData.partida,
                 destino: formData.destino,
                 transporte: formData.transporte,
@@ -262,7 +262,7 @@ export const Home = () => {
                                 <tbody>
                                     {trasladosFiltrados.map((traslado, index) => {
                                         const factorEmision = emissionFactors[traslado.transporte] ?? 0;
-                                        const huellaCarbono = traslado.kilometros * factorEmision;
+                                        const huellaCarbono = traslado.idaVuelta ? traslado.kilometros * factorEmision * 2 : traslado.kilometros * factorEmision;
                                         return (
                                             <tr key={traslado._id ?? index} className="text-center">
                                                 <td className="border p-2">{traslado.partida}</td>
@@ -297,12 +297,14 @@ export const Home = () => {
                                             <td className="border p-2 hidden sm:table-cell">
                                                 {trasladosFiltrados.reduce((total, traslado) => {
                                                     const factor = emissionFactors[traslado.transporte] ?? 0;
-                                                    return total + traslado.kilometros * factor;
+                                                    const kmTotales = traslado.kilometros * (traslado.idaVuelta ? 2 : 1);
+                                                    return total + kmTotales * factor;
                                                 }, 0).toFixed(6)} kg CO₂
                                             </td>
                                             <td className="border p-2"></td>
                                         </tr>
                                     )}
+
 
                                 </tbody>
                             </table>
