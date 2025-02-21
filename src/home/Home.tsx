@@ -244,8 +244,8 @@ export const Home = () => {
                                                 <td className="border p-2 hidden sm:table-cell">{traslado.fecha}</td>
                                                 <td className="border p-2">{traslado.trabajador}</td>
                                                 <td className="border p-2 hidden sm:table-cell">{traslado.idaVuelta ? "Sí" : "No"}</td>
-                                                <td className="border p-2 hidden sm:table-cell">{factorEmision.toFixed(3)} kg CO₂/km</td>
-                                                <td className="border p-2 hidden sm:table-cell">{huellaCarbono.toFixed(3)} kg CO₂</td>
+                                                <td className="border p-2 hidden sm:table-cell">{factorEmision.toFixed(6)} kg CO₂/km</td>
+                                                <td className="border p-2 hidden sm:table-cell">{huellaCarbono.toFixed(6)} kg CO₂</td>
                                                 <td className="border p-2 flex flex-col sm:flex-row gap-2">
                                                     <button
                                                         onClick={() => handleDelete(traslado._id)}
@@ -270,7 +270,7 @@ export const Home = () => {
                                                 {trasladosFiltrados.reduce((total, traslado) => {
                                                     const factor = emissionFactors[traslado.transporte] ?? 0;
                                                     return total + traslado.kilometros * factor;
-                                                }, 0).toFixed(3)} kg CO₂
+                                                }, 0).toFixed(6)} kg CO₂
                                             </td>
                                             <td className="border p-2"></td>
                                         </tr>
