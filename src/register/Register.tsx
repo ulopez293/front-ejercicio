@@ -85,7 +85,7 @@ export const Register = () => {
                         <div className="mb-2 block">
                             <Label htmlFor="password" value="Contraseña" />
                         </div>
-                        <TextInput id="password" type="password" placeholder="********" required value={password} onChange={handlePasswordChange} />
+                        <TextInput id="password" minLength={6} type="password" placeholder="********" required value={password} onChange={handlePasswordChange} />
                     </div>
 
                     {/* Mostrar mensajes de error o éxito */}
