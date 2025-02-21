@@ -250,12 +250,12 @@ export const Home = () => {
                                         <th className="border p-2">Partida</th>
                                         <th className="border p-2">Destino</th>
                                         <th className="border p-2">Transporte</th>
-                                        <th className="border p-2 hidden sm:table-cell">Kilómetros</th>
-                                        <th className="border p-2 hidden sm:table-cell">Fecha</th>
+                                        <th className="border p-2 ">Kilómetros</th>
+                                        <th className="border p-2 ">Fecha</th>
                                         <th className="border p-2">Trabajador</th>
-                                        <th className="border p-2 hidden sm:table-cell">Ida y Vuelta</th>
-                                        <th className="border p-2 hidden sm:table-cell">Factor de Emisión</th>
-                                        <th className="border p-2 hidden sm:table-cell">Huella de Carbono</th>
+                                        <th className="border p-2 ">Ida y Vuelta</th>
+                                        <th className="border p-2 ">Factor de Emisión</th>
+                                        <th className="border p-2 ">Huella de Carbono</th>
                                         <th className="border p-2">Acciones</th>
                                     </tr>
                                 </thead>
