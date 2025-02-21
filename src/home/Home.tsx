@@ -268,12 +268,12 @@ export const Home = () => {
                                                 <td className="border p-2">{traslado.partida}</td>
                                                 <td className="border p-2">{traslado.destino}</td>
                                                 <td className="border p-2">{traslado.transporte}</td>
-                                                <td className="border p-2 hidden sm:table-cell">{traslado.kilometros} km</td>
-                                                <td className="border p-2 hidden sm:table-cell">{traslado.fecha}</td>
+                                                <td className="border p-2 ">{traslado.kilometros} km</td>
+                                                <td className="border p-2 ">{traslado.fecha}</td>
                                                 <td className="border p-2">{traslado.trabajador}</td>
-                                                <td className="border p-2 hidden sm:table-cell">{traslado.idaVuelta ? "Sí" : "No"}</td>
-                                                <td className="border p-2 hidden sm:table-cell">{factorEmision.toFixed(6)} kg CO₂/km</td>
-                                                <td className="border p-2 hidden sm:table-cell">{huellaCarbono.toFixed(6)} kg CO₂</td>
+                                                <td className="border p-2 ">{traslado.idaVuelta ? "Sí" : "No"}</td>
+                                                <td className="border p-2 ">{factorEmision.toFixed(6)} kg CO₂/km</td>
+                                                <td className="border p-2 ">{huellaCarbono.toFixed(6)} kg CO₂</td>
                                                 <td className="border p-2 flex flex-col sm:flex-row gap-2">
                                                     <button
                                                         onClick={() => handleDelete(traslado._id)}
@@ -294,7 +294,7 @@ export const Home = () => {
                                     {trasladosFiltrados.length > 0 && (
                                         <tr className="text-center font-bold bg-gray-200">
                                             <td className="border p-2" colSpan={8}>Total</td>
-                                            <td className="border p-2 hidden sm:table-cell">
+                                            <td className="border p-2 ">
                                                 {trasladosFiltrados.reduce((total, traslado) => {
                                                     const factor = emissionFactors[traslado.transporte] ?? 0;
                                                     const kmTotales = traslado.kilometros * (traslado.idaVuelta ? 2 : 1);
