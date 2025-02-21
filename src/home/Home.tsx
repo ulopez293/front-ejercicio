@@ -88,7 +88,7 @@ export const Home = () => {
         e.preventDefault()
         if (isEditMode) {
             mutationUpdate.mutate({
-                _id: actualID, // Asegúrate de tener el ID
+                _id: actualID, 
                 partida: formData.partida,
                 destino: formData.destino,
                 transporte: formData.transporte,
